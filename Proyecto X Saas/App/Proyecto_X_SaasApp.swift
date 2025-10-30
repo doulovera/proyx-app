@@ -11,7 +11,7 @@ import SwiftUI
 struct Proyecto_X_SaasApp: App {
     var body: some Scene {
         WindowGroup {
-            AppCoordinator()
+            ContentViewBackend()
         }
     }
 }

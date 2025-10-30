@@ -392,23 +392,26 @@ struct PurchaseSuccessView: View {
 
 #Preview {
     PurchaseTicketView(event: Event(
+        id: UUID().uuidString,
         title: "Noche de Sushi Premium",
         description: "Disfruta de la mejor selección de sushi artesanal",
         fullDescription: "Una experiencia culinaria única",
-        date: Date(),
+        date: ISO8601DateFormatter().string(from: Date()),
         time: "7:00 PM",
         duration: "3 horas",
         location: "Restaurante Sakura",
         address: "Av. Principal 123",
         category: .gastronomico,
         price: 65,
-        isSponsored: true,
-        imageName: "sushi",
-        organizer: "Chef Hiroshi",
         capacity: 25,
         availableTickets: 8,
+        organizer: "Chef Hiroshi",
+        isSponsored: true,
         requirements: ["Reserva previa"],
-        includes: ["Menú completo"],
-        tags: ["Premium"]
+        includes: ["Sake de bienvenida", "Postre", "Té verde"],
+        tags: ["Sushi", "Premium", "Chef Especial"],
+        imageName: "sushi",
+        createdAt: ISO8601DateFormatter().string(from: Date()),
+        updatedAt: nil
     ), ticketCount: 2)
 }

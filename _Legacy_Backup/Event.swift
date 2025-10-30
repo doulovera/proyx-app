@@ -1,35 +1,40 @@
 import Foundation
 
-struct Event: Identifiable, Hashable {
-    let id = UUID()
+struct Event: Identifiable, Hashable, Codable {
+    let id: String
     let title: String
     let description: String
     let fullDescription: String
-    let date: Date
+    let date: String // ISO8601 string from API
     let time: String
     let duration: String
     let location: String
     let address: String
     let category: EventCategory
     let price: Double
-    let isSponsored: Bool
-    let imageName: String
-    let organizer: String
     let capacity: Int
     let availableTickets: Int
+    let organizer: String
+    let isSponsored: Bool
     let requirements: [String]
     let includes: [String]
     let tags: [String]
+    let imageName: String?
+    let createdAt: String
+    let updatedAt: String?
+    
+    // Computed properties for UI
+    var parsedDate: Date {
+        return ISO8601DateFormatter().date(from: date) ?? Date()
+    }
     
     var isToday: Bool {
-        Calendar.current.isDateInToday(date)
+        Calendar.current.isDateInToday(parsedDate)
     }
     
     var isThisWeek: Bool {
         let calendar = Calendar.current
-        let today = Date()
-        let weekFromToday = calendar.date(byAdding: .day, value: 7, to: today) ?? today
-        return date >= today && date <= weekFromToday
+        return calendar.isDate(parsedDate, equalTo: Date(), toGranularity: .weekOfYear)
     }
     
     var isFree: Bool {
@@ -44,18 +49,18 @@ struct Event: Identifiable, Hashable {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMM"
         formatter.locale = Locale(identifier: "es_ES")
-        return formatter.string(from: date)
+        return formatter.string(from: parsedDate)
     }
     
     var dayOfWeek: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
         formatter.locale = Locale(identifier: "es_ES")
-        return formatter.string(from: date).capitalized
+        return formatter.string(from: parsedDate).capitalized
     }
 }
 
-enum EventCategory: String, CaseIterable {
+enum EventCategory: String, CaseIterable, Codable {
     case gastronomico = "Gastronómico"
     case bebidas = "Bebidas"
     case educativo = "Educativo"

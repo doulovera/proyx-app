@@ -413,23 +413,26 @@ struct EventDetailView: View {
 
 #Preview {
     EventDetailView(event: Event(
+        id: UUID().uuidString,
         title: "Noche de Sushi Premium",
         description: "Disfruta de la mejor selección de sushi artesanal",
         fullDescription: "Una experiencia culinaria única donde podrás degustar los mejores cortes de pescado fresco.",
-        date: Date(),
+        date: ISO8601DateFormatter().string(from: Date()),
         time: "7:00 PM",
         duration: "3 horas",
         location: "Restaurante Sakura",
         address: "Av. Principal 123, Zona Rosa",
         category: .gastronomico,
         price: 65,
-        isSponsored: true,
-        imageName: "sushi",
-        organizer: "Chef Hiroshi Tanaka",
         capacity: 25,
         availableTickets: 8,
+        organizer: "Chef Hiroshi Tanaka",
+        isSponsored: true,
         requirements: ["Reserva previa obligatoria"],
         includes: ["Menú degustación completo"],
-        tags: ["Premium"]
+        tags: ["Premium"],
+        imageName: "sushi",
+        createdAt: ISO8601DateFormatter().string(from: Date()),
+        updatedAt: nil
     ))
 }

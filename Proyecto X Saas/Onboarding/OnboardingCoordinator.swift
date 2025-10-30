@@ -21,29 +21,16 @@ struct OnboardingCoordinator: View {
                     }
                 )
             case .login:
-                LoginView(
-                    onLoginComplete: {
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            currentStep = .complete
+                LoginViewBackend()
+                    .onReceive(NetworkManager.shared.$isLoggedIn) { isLoggedIn in
+                        if isLoggedIn {
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                currentStep = .complete
+                            }
                         }
-                    },
-                    onBack: {
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            currentStep = .welcome
-                        }
-                    },
-                    onSignUp: {
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            currentStep = .signup
-                        }
-                    },
-                    onQuickAccess: {
-                        // Acceso directo al HomeView (saltando onboarding)
-                        onAuthenticationComplete()
                     }
-                )
             case .signup:
-                SignUpView(
+                SignUpViewBackend(
                     onSignUpComplete: {
                         withAnimation(.easeInOut(duration: 0.5)) {
                             currentStep = .complete
