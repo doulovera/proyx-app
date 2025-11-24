@@ -923,10 +923,16 @@ enum EventCategory: String, CaseIterable, Codable {
 
 // MARK: - Product Models
 enum ProductCategory: String, CaseIterable, Codable {
-    case bebidas = "Bebidas"
-    case alimentos = "Alimentos"
-    case cocteles = "Cocteles"
-    case promociones = "Promociones"
+    case bebidas = "bebidas"
+    case alimentos = "alimentos"
+    case cocteles = "cocteles"
+    case promociones = "promociones"
+    case pizza = "pizza"
+    case burger = "burger"
+    case healthy = "healthy"
+    case sandwich = "sandwich"
+    case sushi = "sushi"
+    case grocery = "grocery"
     
     var icon: String {
         switch self {
@@ -938,11 +944,44 @@ enum ProductCategory: String, CaseIterable, Codable {
             return "wineglass.fill"
         case .promociones:
             return "tag.fill"
+        case .pizza:
+            return "🍕"
+        case .burger:
+            return "🍔"
+        case .healthy:
+            return "leaf.fill"
+        case .sandwich:
+            return "🥪"
+        case .sushi:
+            return "🍣"
+        case .grocery:
+            return "cart.fill"
         }
     }
     
     var displayName: String {
-        return self.rawValue
+        switch self {
+        case .bebidas:
+            return "Bebidas"
+        case .alimentos:
+            return "Alimentos"
+        case .cocteles:
+            return "Cocteles"
+        case .promociones:
+            return "Promociones"
+        case .pizza:
+            return "Pizza"
+        case .burger:
+            return "Hamburguesas"
+        case .healthy:
+            return "Saludable"
+        case .sandwich:
+            return "Sándwiches"
+        case .sushi:
+            return "Sushi"
+        case .grocery:
+            return "Supermercado"
+        }
     }
 }
 
@@ -971,14 +1010,16 @@ struct ProductStore: Identifiable, Hashable, Codable {
     let reviewCount: Int
     let deliveryTime: String
     let address: String
-    let phone: String
+    let phone: String?
     let isOpen: Bool
-    let latitude: Double
-    let longitude: Double
-    let priceRange: PriceRange
+    let latitude: Double?
+    let longitude: Double?
+    let priceRange: String  // Backend sends string like "$", "$$", "$$$"
     let specialties: [String]
-    let features: [String]
-    let createdAt: String
+    let features: [String]?
+    let imageName: String?
+    let backgroundColor: String?
+    let createdAt: String?
     let updatedAt: String?
     
     var statusText: String {
@@ -990,11 +1031,17 @@ struct ProductStore: Identifiable, Hashable, Codable {
     }
     
     var priceRangeText: String {
+        return priceRange  // Already a string from backend
+    }
+    
+    var priceRangeEnum: PriceRange {
+        // Convert string to enum for UI logic
         switch priceRange {
-        case .budget: return "€"
-        case .moderate: return "€€"
-        case .expensive: return "€€€"
-        case .luxury: return "€€€€"
+        case "$": return .budget
+        case "$$": return .moderate
+        case "$$$": return .expensive
+        case "$$$$": return .luxury
+        default: return .moderate
         }
     }
 }

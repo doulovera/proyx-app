@@ -27,10 +27,34 @@ class StoreManager: ObservableObject {
             let fetchedStores = try await networkManager.fetchStores()
             self.stores = fetchedStores
             self.isLoading = false
+        } catch let DecodingError.keyNotFound(key, context) {
+            self.errorMessage = "Error de decodificación: Falta la clave '\(key.stringValue)'"
+            self.isLoading = false
+            print("❌ Decoding Error - Missing key: '\(key.stringValue)'")
+            print("   Context: \(context.debugDescription)")
+            print("   CodingPath: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
+        } catch let DecodingError.typeMismatch(type, context) {
+            self.errorMessage = "Error de decodificación: Tipo incorrecto para '\(type)'"
+            self.isLoading = false
+            print("❌ Decoding Error - Type mismatch for: '\(type)'")
+            print("   Context: \(context.debugDescription)")
+            print("   CodingPath: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
+        } catch let DecodingError.valueNotFound(type, context) {
+            self.errorMessage = "Error de decodificación: Valor no encontrado para '\(type)'"
+            self.isLoading = false
+            print("❌ Decoding Error - Value not found for: '\(type)'")
+            print("   Context: \(context.debugDescription)")
+            print("   CodingPath: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
+        } catch let DecodingError.dataCorrupted(context) {
+            self.errorMessage = "Error de decodificación: Datos corruptos"
+            self.isLoading = false
+            print("❌ Decoding Error - Data corrupted")
+            print("   Context: \(context.debugDescription)")
+            print("   CodingPath: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
         } catch {
             self.errorMessage = error.localizedDescription
             self.isLoading = false
-            print("Error loading stores: \(error)")
+            print("❌ Error loading stores: \(error)")
         }
     }
     
@@ -46,10 +70,14 @@ class StoreManager: ObservableObject {
                 )
                 self.stores = fetchedStores
                 self.isLoading = false
+            } catch let DecodingError.keyNotFound(key, context) {
+                self.errorMessage = "Error: Falta la clave '\(key.stringValue)'"
+                self.isLoading = false
+                print("❌ Search Stores - Missing key: '\(key.stringValue)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
             } catch {
                 self.errorMessage = error.localizedDescription
                 self.isLoading = false
-                print("Error searching stores: \(error)")
+                print("❌ Error searching stores: \(error)")
             }
         }
     }
@@ -122,10 +150,14 @@ class ProductManager: ObservableObject {
             let fetchedProducts = try await networkManager.fetchProducts()
             self.products = fetchedProducts
             self.isLoading = false
+        } catch let DecodingError.keyNotFound(key, context) {
+            self.errorMessage = "Error: Falta la clave '\(key.stringValue)'"
+            self.isLoading = false
+            print("❌ Products - Missing key: '\(key.stringValue)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
         } catch {
             self.errorMessage = error.localizedDescription
             self.isLoading = false
-            print("Error loading products: \(error)")
+            print("❌ Error loading products: \(error)")
         }
     }
     
@@ -138,10 +170,14 @@ class ProductManager: ObservableObject {
                 let fetchedProducts = try await networkManager.fetchProductsByStore(storeId: storeId)
                 self.products = fetchedProducts
                 self.isLoading = false
+            } catch let DecodingError.keyNotFound(key, context) {
+                self.errorMessage = "Error: Falta la clave '\(key.stringValue)'"
+                self.isLoading = false
+                print("❌ Products by Store - Missing key: '\(key.stringValue)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
             } catch {
                 self.errorMessage = error.localizedDescription
                 self.isLoading = false
-                print("Error loading products for store: \(error)")
+                print("❌ Error loading products for store: \(error)")
             }
         }
     }
@@ -240,10 +276,14 @@ class EventManager: ObservableObject {
             let fetchedEvents = try await networkManager.fetchEvents()
             self.events = fetchedEvents
             self.isLoading = false
+        } catch let DecodingError.keyNotFound(key, context) {
+            self.errorMessage = "Error: Falta la clave '\(key.stringValue)'"
+            self.isLoading = false
+            print("❌ Events - Missing key: '\(key.stringValue)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: " -> "))")
         } catch {
             self.errorMessage = error.localizedDescription
             self.isLoading = false
-            print("Error loading events: \(error)")
+            print("❌ Error loading events: \(error)")
         }
     }
     
