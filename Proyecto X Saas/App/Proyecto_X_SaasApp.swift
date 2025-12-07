@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct Proyecto_X_SaasApp: App {
+    // Toggle to switch between backend UI and legacy UI
+    private let useLegacyUI = true
+
     var body: some Scene {
         WindowGroup {
-            ContentViewBackend()
+            if useLegacyUI {
+                LegacyAppCoordinator()
+            } else {
+                ContentViewBackend()
+            }
         }
     }
 }
