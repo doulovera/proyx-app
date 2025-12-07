@@ -876,6 +876,138 @@ struct Event: Identifiable, Hashable, Codable {
         formatter.locale = Locale(identifier: "es_ES")
         return formatter.string(from: parsedDate).capitalized
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case fullDescription
+        case date
+        case time
+        case duration
+        case location
+        case address
+        case category
+        case price
+        case capacity
+        case availableTickets
+        case organizer
+        case isSponsored
+        case requirements
+        case includes
+        case tags
+        case imageName
+        case createdAt
+        case updatedAt
+    }
+
+    init(id: String,
+         title: String,
+         description: String,
+         fullDescription: String = "",
+         date: String,
+         time: String,
+         duration: String = "",
+         location: String,
+         address: String = "",
+         category: EventCategory,
+         price: Double,
+         capacity: Int = 0,
+         availableTickets: Int = 0,
+         organizer: String,
+         isSponsored: Bool = false,
+         requirements: [String] = [],
+         includes: [String] = [],
+         tags: [String] = [],
+         imageName: String? = nil,
+         createdAt: String = "",
+         updatedAt: String? = nil) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.fullDescription = fullDescription
+        self.date = date
+        self.time = time
+        self.duration = duration
+        self.location = location
+        self.address = address.isEmpty ? location : address
+        self.category = category
+        self.price = price
+        self.capacity = capacity
+        self.availableTickets = availableTickets
+        self.organizer = organizer
+        self.isSponsored = isSponsored
+        self.requirements = requirements
+        self.includes = includes
+        self.tags = tags
+        self.imageName = imageName
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+        description = try container.decodeIfPresent(String.self, forKey: .description) ?? ""
+        fullDescription = try container.decodeIfPresent(String.self, forKey: .fullDescription) ?? description
+        date = try container.decodeIfPresent(String.self, forKey: .date) ?? ""
+        time = try container.decodeIfPresent(String.self, forKey: .time) ?? ""
+        duration = try container.decodeIfPresent(String.self, forKey: .duration) ?? ""
+        location = try container.decodeIfPresent(String.self, forKey: .location) ?? ""
+        let decodedAddress = try container.decodeIfPresent(String.self, forKey: .address)
+        address = decodedAddress?.isEmpty == false ? decodedAddress! : location
+
+        // Map category robustly (backend sends lowercase, enums use capitalized strings)
+        let categoryRaw = (try container.decodeIfPresent(String.self, forKey: .category) ?? "").lowercased()
+        switch categoryRaw {
+        case "gastronomico": category = .gastronomico
+        case "bebidas": category = .bebidas
+        case "educativo": category = .educativo
+        case "cultural": category = .cultural
+        case "networking": category = .networking
+        case "entretenimiento": category = .entretenimiento
+        default: category = .gastronomico
+        }
+
+        price = try container.decodeIfPresent(Double.self, forKey: .price) ?? 0
+        availableTickets = try container.decodeIfPresent(Int.self, forKey: .availableTickets) ?? 0
+        capacity = try container.decodeIfPresent(Int.self, forKey: .capacity) ?? availableTickets
+        organizer = try container.decodeIfPresent(String.self, forKey: .organizer) ?? ""
+        isSponsored = try container.decodeIfPresent(Bool.self, forKey: .isSponsored) ?? false
+        requirements = try container.decodeIfPresent([String].self, forKey: .requirements) ?? []
+        includes = try container.decodeIfPresent([String].self, forKey: .includes) ?? []
+        tags = try container.decodeIfPresent([String].self, forKey: .tags) ?? []
+        imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt) ?? ""
+        updatedAt = try container.decodeIfPresent(String.self, forKey: .updatedAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encode(description, forKey: .description)
+        try container.encode(fullDescription, forKey: .fullDescription)
+        try container.encode(date, forKey: .date)
+        try container.encode(time, forKey: .time)
+        try container.encode(duration, forKey: .duration)
+        try container.encode(location, forKey: .location)
+        try container.encode(address, forKey: .address)
+        try container.encode(category, forKey: .category)
+        try container.encode(price, forKey: .price)
+        try container.encode(capacity, forKey: .capacity)
+        try container.encode(availableTickets, forKey: .availableTickets)
+        try container.encode(organizer, forKey: .organizer)
+        try container.encode(isSponsored, forKey: .isSponsored)
+        try container.encode(requirements, forKey: .requirements)
+        try container.encode(includes, forKey: .includes)
+        try container.encode(tags, forKey: .tags)
+        try container.encodeIfPresent(imageName, forKey: .imageName)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
+    }
 }
 
 enum EventCategory: String, CaseIterable, Codable {
@@ -1043,6 +1175,92 @@ struct ProductStore: Identifiable, Hashable, Codable {
         case "$$$$": return .luxury
         default: return .moderate
         }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case description
+        case category
+        case rating
+        case reviewCount
+        case deliveryTime
+        case address
+        case phone
+        case isOpen
+        case latitude
+        case longitude
+        case priceRange
+        case specialties
+        case features
+        case imageName
+        case backgroundColor
+        case createdAt
+        case updatedAt
+    }
+
+    init(id: String,
+         name: String,
+         description: String,
+         category: ProductCategory,
+         rating: Double,
+         reviewCount: Int,
+         deliveryTime: String,
+         address: String,
+         phone: String? = nil,
+         isOpen: Bool,
+         latitude: Double? = nil,
+         longitude: Double? = nil,
+         priceRange: String,
+         specialties: [String] = [],
+         features: [String]? = nil,
+         imageName: String? = nil,
+         backgroundColor: String? = nil,
+         createdAt: String? = nil,
+         updatedAt: String? = nil) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.category = category
+        self.rating = rating
+        self.reviewCount = reviewCount
+        self.deliveryTime = deliveryTime
+        self.address = address
+        self.phone = phone
+        self.isOpen = isOpen
+        self.latitude = latitude
+        self.longitude = longitude
+        self.priceRange = priceRange
+        self.specialties = specialties
+        self.features = features
+        self.imageName = imageName
+        self.backgroundColor = backgroundColor
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        description = try container.decode(String.self, forKey: .description)
+        category = try container.decode(ProductCategory.self, forKey: .category)
+        rating = try container.decodeIfPresent(Double.self, forKey: .rating) ?? 0
+        reviewCount = try container.decodeIfPresent(Int.self, forKey: .reviewCount) ?? 0
+        deliveryTime = try container.decodeIfPresent(String.self, forKey: .deliveryTime) ?? ""
+        address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
+        phone = try container.decodeIfPresent(String.self, forKey: .phone)
+        isOpen = try container.decodeIfPresent(Bool.self, forKey: .isOpen) ?? false
+        latitude = try container.decodeIfPresent(Double.self, forKey: .latitude)
+        longitude = try container.decodeIfPresent(Double.self, forKey: .longitude)
+        priceRange = try container.decodeIfPresent(String.self, forKey: .priceRange) ?? "$$"
+        specialties = try container.decodeIfPresent([String].self, forKey: .specialties) ?? []
+        features = try container.decodeIfPresent([String].self, forKey: .features)
+        imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
+        backgroundColor = try container.decodeIfPresent(String.self, forKey: .backgroundColor)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
+        updatedAt = try container.decodeIfPresent(String.self, forKey: .updatedAt)
     }
 }
 
