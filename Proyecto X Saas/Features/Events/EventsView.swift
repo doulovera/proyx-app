@@ -352,6 +352,22 @@ struct RecommendedEventCard: View {
                     .captionText()
                     .lineLimit(2)
                 
+                let available = event.availableTickets ?? 0
+                if available < 20 && available > 0 {
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(AppTheme.Typography.caption2)
+                            .foregroundColor(.orange)
+                        Text("Solo quedan \(available) entradas")
+                            .font(AppTheme.Typography.caption2)
+                            .foregroundColor(.orange)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.sm)
+                    .padding(.vertical, AppTheme.Spacing.xs)
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(AppTheme.CornerRadius.small)
+                }
+                
                 Button("Ver detalles") {
                     action()
                 }

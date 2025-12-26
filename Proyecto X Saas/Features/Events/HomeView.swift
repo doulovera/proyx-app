@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var selectedCategory: FoodCategory = .all
     @State private var showAllPromotions = false
     @State private var showAllStores = false
+    @State private var selectedEvent: Event?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -38,6 +39,9 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showAllStores) {
                 AllStoresView(dependencies: dependencies, selectedCategory: selectedCategory)
+            }
+            .sheet(item: $selectedEvent) { event in
+                EventDetailView(event: event)
             }
             .task {
                 await viewModel.load()
@@ -123,8 +127,9 @@ struct HomeView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: AppTheme.Spacing.md) {
                         ForEach(viewModel.featuredEvents) { event in
-                            EventCard(event: event) { }
-                                .frame(width: 260)
+                            RecommendedEventCard(event: event) {
+                                selectedEvent = event
+                            }
                         }
                     }
                     .padding(.horizontal, AppTheme.Spacing.xl)
