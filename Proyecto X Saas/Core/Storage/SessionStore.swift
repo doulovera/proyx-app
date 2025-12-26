@@ -25,6 +25,10 @@ final class SessionStore: ObservableObject {
         self.token = token
         tokenStore.save(token: token)
     }
+    
+    func setUser(_ user: UserProfile) {
+        self.user = user
+    }
 
     func clearSession() {
         user = nil

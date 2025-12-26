@@ -34,7 +34,10 @@ struct ProfileView: View {
             .toolbar(.hidden, for: .navigationBar)
             .background(AppTheme.Colors.groupedBackground)
             .sheet(isPresented: $showingPersonalInfo) {
-                PersonalInfoView()
+                PersonalInfoView(
+                    profileService: dependencies.profileService,
+                    sessionStore: dependencies.session
+                )
             }
             .sheet(isPresented: $showingMemberCard) {
                 MemberCardView()

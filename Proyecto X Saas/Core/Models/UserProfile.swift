@@ -17,6 +17,9 @@ struct UserProfile: Codable {
     let memberSince: Date?
     let emailVerified: Bool
     let createdAt: Date?
+    let dni: String?
+    let address: String?
+    let zipCode: String?
 
     var fullName: String {
         "\(firstName) \(lastName)"

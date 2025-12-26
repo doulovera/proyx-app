@@ -2,19 +2,14 @@ import SwiftUI
 
 struct PersonalInfoView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var email = "jhon.miranda@email.com"
-    @State private var phone = "+1 (555) 123-4567"
-    @State private var streetAddress1 = "Calle Principal 123, Apt 4B"
-    @State private var streetAddress2 = ""
-    @State private var city = "Ciudad de México"
-    @State private var state = "CDMX"
-    @State private var country = "México"
-    @State private var postalCode = "01234"
+    @StateObject private var viewModel: PersonalInfoViewModel
     
-    // Datos no editables
-    private let fullName = "Jhon Miranda"
-    private let dni = "12345678"
-    private let memberSince = "Julio 2025"
+    init(profileService: ProfileService, sessionStore: SessionStore) {
+        _viewModel = StateObject(wrappedValue: PersonalInfoViewModel(
+            profileService: profileService,
+            sessionStore: sessionStore
+        ))
+    }
     
     var body: some View {
         NavigationStack {
@@ -43,17 +38,39 @@ struct PersonalInfoView: View {
                 }
             }
             .background(AppTheme.Colors.groupedBackground)
+            .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+                Button("OK") {
+                    viewModel.errorMessage = nil
+                }
+            } message: {
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                }
+            }
+            .alert("Éxito", isPresented: .constant(viewModel.successMessage != nil)) {
+                Button("OK") {
+                    viewModel.successMessage = nil
+                    dismiss()
+                }
+            } message: {
+                if let successMessage = viewModel.successMessage {
+                    Text(successMessage)
+                }
+            }
+            .disabled(viewModel.isLoading)
+            .overlay {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.2))
+                }
+            }
         }
     }
     
     private var headerSection: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
-            Text("Todos los campos son requeridos a menos que se indique lo contrario.")
-                .font(AppTheme.Typography.subheadline)
-                .foregroundColor(AppTheme.Colors.secondaryText)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
             Text("Para cambiar tu nombre o DNI, por favor contacta a soporte en +1 800 627 7468")
                 .font(AppTheme.Typography.subheadline)
                 .foregroundColor(AppTheme.Colors.secondaryText)
@@ -73,7 +90,7 @@ struct PersonalInfoView: View {
                     .foregroundColor(AppTheme.Colors.secondaryText)
                 
                 HStack {
-                    Text(fullName)
+                    Text(viewModel.fullName)
                         .font(AppTheme.Typography.subheadline)
                         .foregroundColor(AppTheme.Colors.primaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -96,7 +113,7 @@ struct PersonalInfoView: View {
                     .foregroundColor(AppTheme.Colors.secondaryText)
                 
                 HStack {
-                    Text(dni)
+                    Text(viewModel.dni.isEmpty ? "No especificado" : viewModel.dni)
                         .font(AppTheme.Typography.subheadline)
                         .foregroundColor(AppTheme.Colors.primaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,7 +136,7 @@ struct PersonalInfoView: View {
                     .foregroundColor(AppTheme.Colors.secondaryText)
                 
                 HStack {
-                    Text(memberSince)
+                    Text(viewModel.memberSince)
                         .font(AppTheme.Typography.subheadline)
                         .foregroundColor(AppTheme.Colors.primaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -138,77 +155,72 @@ struct PersonalInfoView: View {
     
     private var contactInfoSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            // Email
-            EditableField(
-                label: "CORREO ELECTRÓNICO",
-                text: $email,
-                placeholder: "tu@email.com",
-                keyboardType: .emailAddress
-            )
+            // Email (No editable)
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                Text("CORREO ELECTRÓNICO")
+                    .font(AppTheme.Typography.caption1)
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppTheme.Colors.secondaryText)
+                
+                HStack {
+                    Text(viewModel.email)
+                        .font(AppTheme.Typography.subheadline)
+                        .foregroundColor(AppTheme.Colors.primaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    Image(systemName: "lock.fill")
+                        .font(AppTheme.Typography.caption1)
+                        .foregroundColor(AppTheme.Colors.tertiaryText)
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.vertical, AppTheme.Spacing.md)
+                .background(AppTheme.Colors.fillColor)
+                .cornerRadius(AppTheme.CornerRadius.small)
+            }
             
-            // Teléfono
+            Text("Para cambiar tu email, contacta a soporte")
+                .font(AppTheme.Typography.caption2)
+                .foregroundColor(AppTheme.Colors.tertiaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Teléfono (Editable)
             EditableField(
-                label: "TELÉFONO",
-                text: $phone,
+                label: "TELÉFONO (OPCIONAL)",
+                text: $viewModel.phone,
                 placeholder: "+1 (555) 123-4567",
-                keyboardType: .phonePad
+                keyboardType: .phonePad,
+                isOptional: true
             )
         }
     }
     
     private var addressSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            // Dirección línea 1
+            // Dirección (Editable)
             EditableField(
-                label: "DIRECCIÓN LÍNEA 1",
-                text: $streetAddress1,
-                placeholder: "Calle Principal 123"
-            )
-            
-            // Dirección línea 2 (Opcional)
-            EditableField(
-                label: "DIRECCIÓN LÍNEA 2 (OPCIONAL)",
-                text: $streetAddress2,
-                placeholder: "Apartamento, suite, etc.",
+                label: "DIRECCIÓN (OPCIONAL)",
+                text: $viewModel.address,
+                placeholder: "Calle Principal 123, Apt 4B",
                 isOptional: true
             )
             
-            // Ciudad
+            // Código Postal (Editable)
             EditableField(
-                label: "CIUDAD",
-                text: $city,
-                placeholder: "Ciudad"
-            )
-            
-            // Estado/Provincia
-            EditableField(
-                label: "ESTADO/PROVINCIA",
-                text: $state,
-                placeholder: "Estado o Provincia"
-            )
-            
-            // País
-            EditableField(
-                label: "PAÍS/REGIÓN",
-                text: $country,
-                placeholder: "País"
-            )
-            
-            // Código Postal
-            EditableField(
-                label: "CÓDIGO POSTAL",
-                text: $postalCode,
+                label: "CÓDIGO POSTAL (OPCIONAL)",
+                text: $viewModel.zipCode,
                 placeholder: "12345",
-                keyboardType: .numberPad
+                keyboardType: .numberPad,
+                isOptional: true
             )
         }
     }
     
     private var saveButtonSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            Button("Guardar") {
-                // Simular guardado
-                dismiss()
+            Button("Guardar Cambios") {
+                Task {
+                    await viewModel.save()
+                }
             }
             .font(AppTheme.Typography.buttonPrimary)
             .frame(maxWidth: .infinity)
@@ -216,11 +228,6 @@ struct PersonalInfoView: View {
             .background(AppTheme.Colors.primaryText)
             .foregroundColor(AppTheme.Colors.background)
             .cornerRadius(AppTheme.CornerRadius.round)
-            
-            Text("Los cambios se guardarán automáticamente")
-                .font(AppTheme.Typography.caption1)
-                .foregroundColor(AppTheme.Colors.tertiaryText)
-                .multilineTextAlignment(.center)
         }
         .padding(.top, AppTheme.Spacing.xl)
         .padding(.bottom, AppTheme.Spacing.xxxl)
@@ -284,5 +291,12 @@ struct EditableField: View {
 }
 
 #Preview {
-    PersonalInfoView()
+    let sessionStore = SessionStore()
+    let apiClient = APIClient(tokenProvider: { sessionStore.token })
+    let profileService = ProfileService(client: apiClient)
+    
+    return PersonalInfoView(
+        profileService: profileService,
+        sessionStore: sessionStore
+    )
 }

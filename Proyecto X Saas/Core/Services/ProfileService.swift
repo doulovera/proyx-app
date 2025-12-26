@@ -1,10 +1,13 @@
 import Foundation
 
 struct UpdateProfileRequest: Codable {
-    let firstName: String
-    let lastName: String
+    let firstName: String?
+    let lastName: String?
     let phone: String?
     let avatarURL: String?
+    let dni: String?
+    let address: String?
+    let zipCode: String?
 }
 
 struct ChangePasswordRequest: Codable {
