@@ -2,17 +2,33 @@ import SwiftUI
 
 struct ProfileView: View {
     let dependencies: AppDependencies
-    @State private var userPoints = 1250
-    @State private var userLevel = "Gold"
-    @State private var nextLevelPoints = 1500
+    @StateObject private var viewModel: ProfileViewModel
     @State private var showingPersonalInfo = false
     @State private var showingMemberCard = false
     @State private var showingPreferences = false
+    
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+        _viewModel = StateObject(wrappedValue: ProfileViewModel(session: dependencies.session))
+    }
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 profileHeaderSection
+                
+                // Error banner
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(AppTheme.Typography.caption1)
+                        .foregroundColor(AppTheme.Colors.error)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
+                        .padding(.vertical, AppTheme.Spacing.xs)
+                        .background(AppTheme.Colors.error.opacity(0.1))
+                        .cornerRadius(AppTheme.CornerRadius.small)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
+                }
+                
                 contentSection
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -73,16 +89,16 @@ struct ProfileView: View {
                     
                     // Información del usuario
                     VStack(spacing: AppTheme.Spacing.xs) {
-                        Text("Jhon Miranda")
+                        Text(viewModel.fullName)
                             .font(AppTheme.Typography.title1)
                             .fontWeight(.semibold)
                             .foregroundColor(AppTheme.Colors.background)
                         
-                        Text("Miembro desde Jul 2025")
+                        Text("Miembro desde \(viewModel.memberSince)")
                             .font(AppTheme.Typography.subheadline)
                             .foregroundColor(AppTheme.Colors.background.opacity(0.9))
                         
-                        Text("#ID: 628773365")
+                        Text("#ID: \(viewModel.memberId)")
                             .font(AppTheme.Typography.caption1)
                             .foregroundColor(AppTheme.Colors.background.opacity(0.7))
                             .padding(.top, AppTheme.Spacing.xs)
@@ -110,7 +126,7 @@ struct ProfileView: View {
                 Spacer()
                 
                 HStack(spacing: AppTheme.Spacing.xs) {
-                    Text("\(userPoints)")
+                    Text("\(viewModel.points)")
                         .font(AppTheme.Typography.title3)
                         .fontWeight(.semibold)
                         .foregroundColor(AppTheme.Colors.background)
@@ -133,16 +149,18 @@ struct ProfileView: View {
             // Barra de progreso nivel
             VStack(spacing: AppTheme.Spacing.xs) {
                 HStack {
-                    Text("\(userLevel) Member")
+                    Text("\(viewModel.membershipLevel) Member")
                         .font(AppTheme.Typography.caption1)
                         .foregroundColor(AppTheme.Colors.background.opacity(0.9))
                     Spacer()
-                    Text("\(nextLevelPoints - userPoints) puntos para Platinum")
+                    Text(viewModel.currentLevel == .platinum 
+                         ? "¡Nivel máximo alcanzado!" 
+                         : "\(viewModel.pointsToNextLevel) puntos para \(viewModel.nextLevelName)")
                         .font(AppTheme.Typography.caption1)
                         .foregroundColor(AppTheme.Colors.background.opacity(0.9))
                 }
                 
-                ProgressView(value: Double(userPoints), total: Double(nextLevelPoints))
+                ProgressView(value: viewModel.progressFraction, total: 1.0)
                     .progressViewStyle(LinearProgressViewStyle())
                     .scaleEffect(x: 1, y: 1.5, anchor: .center)
                     .tint(AppTheme.Colors.background)
@@ -185,6 +203,8 @@ struct ProfileView: View {
                     }
                 )
                 
+                // MARK: - Commented out sections (not implemented yet)
+                /*
                 Divider()
                     .padding(.leading, 60)
                 
@@ -206,6 +226,7 @@ struct ProfileView: View {
                         showingPreferences = true
                     }
                 )
+                */
             }
             .background(AppTheme.Colors.cardBackground)
             .cornerRadius(AppTheme.CornerRadius.medium)
@@ -223,6 +244,8 @@ struct ProfileView: View {
                 .padding(.horizontal, AppTheme.Spacing.xl)
             
             VStack(spacing: 0) {
+                // MARK: - Commented out sections (not implemented yet)
+                /*
                 ProfileRow(
                     icon: "creditcard",
                     title: "Métodos de Pago",
@@ -258,11 +281,12 @@ struct ProfileView: View {
                 
                 Divider()
                     .padding(.leading, 60)
+                */
                 
                 ProfileRow(
                     icon: "rectangle.portrait.and.arrow.right",
                     title: "Cerrar Sesión",
-                    action: {},
+                    action: { viewModel.logout() },
                     isDestructive: true
                 )
             }
