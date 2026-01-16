@@ -5,6 +5,7 @@ struct OnboardingWelcomeView: View {
     let onLogin: () -> Void
     @State private var currentPage = 0
     @State private var isAnimating = false
+    @State private var autoScrollTimer = Timer.publish(every: 4, on: .main, in: .common).autoconnect()
     
     private let features = [
         OnboardingFeature(
@@ -40,8 +41,12 @@ struct OnboardingWelcomeView: View {
                             .tag(index)
                     }
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                .onReceive(autoScrollTimer) { _ in
+                    withAnimation {
+                        currentPage = (currentPage + 1) % features.count
+                    }
+                }
                 
                 // Botones de acción
                 actionButtonsSection
@@ -134,30 +139,7 @@ struct OnboardingWelcomeView: View {
     
     private var actionButtonsSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            // Botón principal
-            Button(action: onContinue) {
-                HStack {
-                    Text("Empezar")
-                        .font(AppTheme.Typography.buttonPrimary)
-                    Spacer()
-                    Image(systemName: "arrow.right")
-                        .font(AppTheme.Typography.title3)
-                }
-                .foregroundColor(AppTheme.Colors.background)
-                .padding(.horizontal, AppTheme.Spacing.xl)
-                .padding(.vertical, AppTheme.Spacing.lg)
-                .background(AppTheme.Colors.brandPrimary)
-                .cornerRadius(AppTheme.CornerRadius.round)
-            }
-            
-            // Botón secundario
-            Button("Ya tengo una cuenta") {
-                onLogin()
-            }
-            .font(AppTheme.Typography.subheadline)
-            .foregroundColor(AppTheme.Colors.secondaryText)
-            
-            // Indicador de progreso
+            // Page indicator dots (moved above buttons)
             HStack(spacing: AppTheme.Spacing.sm) {
                 ForEach(0..<features.count, id: \.self) { index in
                     Circle()
@@ -166,7 +148,33 @@ struct OnboardingWelcomeView: View {
                         .animation(.easeInOut(duration: 0.3), value: currentPage)
                 }
             }
-            .padding(.top, AppTheme.Spacing.sm)
+            .padding(.bottom, AppTheme.Spacing.md)
+            
+            // Primary button - "Empezar" (centered text with arrow)
+            Button(action: onContinue) {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Text("Empezar")
+                        .font(AppTheme.Typography.buttonPrimary)
+                    Image(systemName: "arrow.right")
+                        .font(AppTheme.Typography.body)
+                }
+                .foregroundColor(AppTheme.Colors.background)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppTheme.Spacing.lg)
+                .background(AppTheme.Colors.brandPrimary)
+                .cornerRadius(AppTheme.CornerRadius.round)
+            }
+            
+            // Secondary button - "Ya tengo una cuenta"
+            Button(action: onLogin) {
+                Text("Ya tengo una cuenta")
+                    .font(AppTheme.Typography.buttonPrimary)
+                    .foregroundColor(AppTheme.Colors.primaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, AppTheme.Spacing.lg)
+                    .background(AppTheme.Colors.fillColor)
+                    .cornerRadius(AppTheme.CornerRadius.round)
+            }
         }
         .padding(.horizontal, AppTheme.Spacing.xl)
         .padding(.bottom, AppTheme.Spacing.xxxl)

@@ -16,6 +16,9 @@ struct LoginView: View {
     @State private var errorMessage = ""
     @FocusState private var focusedField: LoginField?
     
+    // UserDefaults key for Remember Me
+    private let rememberedEmailKey = "rememberedEmail"
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -24,7 +27,7 @@ struct LoginView: View {
                     loginFormSection
                     optionsSection
                     actionButtonsSection
-                    alternativeLoginSection
+                    // alternativeLoginSection - Commented out: Social login not implemented yet
                 }
                 .padding(.horizontal, AppTheme.Spacing.xl)
                 .padding(.vertical, AppTheme.Spacing.lg)
@@ -49,6 +52,9 @@ struct LoginView: View {
         }
         .onChange(of: password) { _ in
             clearError()
+        }
+        .onAppear {
+            loadRememberedEmail()
         }
     }
     
@@ -97,7 +103,7 @@ struct LoginView: View {
                                     .foregroundColor(AppTheme.Colors.secondaryText)
                                     .frame(width: 20)
                                 
-                                TextField("ejemplo@correo.com", text: $email)
+                                TextField("", text: $email, prompt: Text("ejemplo@correo.com").foregroundColor(AppTheme.Colors.tertiaryText))
                                     .font(AppTheme.Typography.body)
                                     .foregroundColor(AppTheme.Colors.primaryText)
                                     .keyboardType(.emailAddress)
@@ -105,8 +111,8 @@ struct LoginView: View {
                                     .disableAutocorrection(true)
                                     .focused($focusedField, equals: .email)
                             }
-                            .padding(.horizontal, AppTheme.Spacing.md)
-                            .padding(.vertical, AppTheme.Spacing.sm)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                            .padding(.vertical, AppTheme.Spacing.md)
                             .background(AppTheme.Colors.fillColor)
                             .cornerRadius(AppTheme.CornerRadius.small)
                             .overlay(
@@ -135,8 +141,8 @@ struct LoginView: View {
                                     .foregroundColor(AppTheme.Colors.primaryText)
                                     .focused($focusedField, equals: .password)
                             }
-                            .padding(.horizontal, AppTheme.Spacing.md)
-                            .padding(.vertical, AppTheme.Spacing.sm)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                            .padding(.vertical, AppTheme.Spacing.md)
                             .background(AppTheme.Colors.fillColor)
                             .cornerRadius(AppTheme.CornerRadius.small)
                             .overlay(
@@ -209,7 +215,7 @@ struct LoginView: View {
         VStack(spacing: AppTheme.Spacing.lg) {
             // Botón principal de login
             Button(action: performLogin) {
-                HStack {
+                HStack(spacing: AppTheme.Spacing.sm) {
                     if isLoading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.background))
@@ -217,11 +223,11 @@ struct LoginView: View {
                     } else {
                         Text("Iniciar Sesión")
                             .font(AppTheme.Typography.buttonPrimary)
-                        Spacer()
                         Image(systemName: "arrow.right")
                             .font(AppTheme.Typography.title3)
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .foregroundColor(isFormValid ? AppTheme.Colors.background : AppTheme.Colors.tertiaryText)
                 .padding(.horizontal, AppTheme.Spacing.xl)
                 .padding(.vertical, AppTheme.Spacing.lg)
@@ -229,23 +235,10 @@ struct LoginView: View {
                 .cornerRadius(AppTheme.CornerRadius.round)
             }
             .disabled(!isFormValid || isLoading)
-            
-            // Botón para crear cuenta
-            HStack {
-                Text("¿No tienes una cuenta?")
-                    .font(AppTheme.Typography.subheadline)
-                    .foregroundColor(AppTheme.Colors.secondaryText)
-                
-                Button("Regístrate") {
-                    onSignUp()
-                }
-                .font(AppTheme.Typography.subheadline)
-                .foregroundColor(AppTheme.Colors.brandPrimary)
-                .fontWeight(.semibold)
-            }
         }
     }
     
+    /* Social Login Section - Commented out until implementation
     private var alternativeLoginSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
             // Separador con texto
@@ -291,6 +284,7 @@ struct LoginView: View {
         }
         .padding(.bottom, AppTheme.Spacing.xxxl)
     }
+    */
     
     // MARK: - Helper Properties
     private var isFormValid: Bool {
@@ -308,6 +302,14 @@ struct LoginView: View {
             do {
                 let response = try await dependencies.authService.login(email: email, password: password)
                 session.setSession(user: response.user, token: response.token)
+                
+                // Handle Remember Me
+                if rememberMe {
+                    UserDefaults.standard.set(email, forKey: rememberedEmailKey)
+                } else {
+                    UserDefaults.standard.removeObject(forKey: rememberedEmailKey)
+                }
+                
                 isLoading = false
                 onLoginComplete()
             } catch {
@@ -335,6 +337,13 @@ struct LoginView: View {
     private func clearError() {
         showingError = false
         errorMessage = ""
+    }
+    
+    private func loadRememberedEmail() {
+        if let savedEmail = UserDefaults.standard.string(forKey: rememberedEmailKey) {
+            email = savedEmail
+            rememberMe = true
+        }
     }
 }
 
