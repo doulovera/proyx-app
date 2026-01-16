@@ -7,7 +7,12 @@ struct APIConfig {
     let timeout: TimeInterval = 30
 
     private init() {
-        // Default to local backend; swap to production URL via build settings if needed.
-        self.baseURL = URL(string: "http://127.0.0.1:8080")!
+        // #if DEBUG
+        // // Local development backend
+        // self.baseURL = URL(string: "http://127.0.0.1:8080")!
+        // #else
+        // // Production backend
+        self.baseURL = URL(string: "https://tumb-api.up.railway.app")!
+        // #endif
     }
 }

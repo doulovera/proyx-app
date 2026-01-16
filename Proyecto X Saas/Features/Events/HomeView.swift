@@ -27,7 +27,7 @@ struct HomeView: View {
                     VStack(spacing: 0) {
                         categoriesSection
                         eventsSection
-                        storesSection
+//                        storesSection
                         productsSection
                     }
                 }
@@ -139,6 +139,7 @@ struct HomeView: View {
         .padding(.bottom, AppTheme.Spacing.xxxl)
     }
 
+/*
     private var storesSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             HStack {
@@ -164,7 +165,7 @@ struct HomeView: View {
         }
         .padding(.bottom, AppTheme.Spacing.xxxl)
     }
-
+*/
     private var productsSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             HStack {

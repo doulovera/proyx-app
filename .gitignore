@@ -1,0 +1,32 @@
+# Xcode user-specific data
+xcuserdata/
+*.xcuserstate
+
+# macOS system files
+.DS_Store
+
+# Build products
+build/
+DerivedData/
+
+# CocoaPods (if used)
+Pods/
+Podfile.lock
+
+# Swift Package Manager (if used)
+.build/
+.swiftpm/
+
+# Fastlane (if used)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.AppleDouble
+.LSOverride
