@@ -54,7 +54,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                 Text("Explora ahora")
                     .captionText()
-                Text("Proyecto X SaaS")
+                Text("Tumb")
                     .sectionHeader()
             }
             Spacer()
